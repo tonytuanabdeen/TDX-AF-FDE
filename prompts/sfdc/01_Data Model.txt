@@ -1,0 +1,32 @@
+Salesforce Metadata Prompt: FDE Bank Lightning Console AppYou are a Salesforce metadata expert. Generate complete, deployment-ready Salesforce metadata XML for the following setup. Output each file with its full filename path (e.g. objects/Loan_Application__c.object-meta.xml). Do not truncate any file. After all XML, provide a summary table of all files generated.———1. Custom Object: Loan_Application__cCreate a custom object with:
+Label: "Loan Application", Plural: "Loan Applications"
+A Name field (auto-number format: LA-{0000})
+A Status picklist field with values: New (default), Pending Approval, Approved, Rejected
+A Reject Reason long text area field (255 chars), only relevant when status is Rejected
+A lookup to Account (Person Account), labeled "Applicant", required
+Loan Questions & Answers: model this as a related child object Loan_QA__c with fields: Question__c (text, 255), Answer__c (long text area, 32768), Loan_Application__c (master-detail to Loan_Application__c). This allows flexible, d Q&A storage without schema changes.
+Enable: Activities, Feed Tracking, Search
+2. Page Layout: Loan_Application__c-Loan Application Layout
+Header section: Name, Status, Applicant
+Details section: Reject Reason (full width)
+Related lists: Loan Q&A entries, Activity History, Chatter Feed
+3. FlexiPage: Loan_Application_Record_Page
+Type: RecordPage, object: Loan_Application__c
+Set as the org default for this object (<activationContext> with type = Org)
+Layout: highlights panel at top, then tabs: Details | Q&A (related list) | Activity | Chatter
+4. Profile Permissions — System AdministratorIn the Admin.profile-meta.xml (or a profile patch file), grant on Loan_Application__c and Loan_QA__c:
+allowCreate, allowRead, allowEdit, allowDelete, modifyAllRecords, viewAllRecords = true
+5. Permission Set: Customer_Support
+Label: "Customer Support"
+On Account: allowCreate, allowRead, allowEdit, allowDelete = true
+On Loan_Application__c: allowCreate, allowRead, allowEdit, allowDelete = true
+On Loan_QA__c: allowCreate, alloead, allowEdit, allowDelete = true
+App access: grant access to the FDE_Bank app
+6. Lightning App: FDE_Bank
+Label: "FDE Bank"
+isConsole: true (Lightning Console app)
+Brand color: #C0001E (dark red)
+Nav items: Home, Loan_Application__c, Account, Report, Dashboard
+Utility bar: include Recent Items and Notes utilities
+Output all metadata files. Use API version 62.0. Follow Salesforce DX source format. Include a package.xml that covers all types generated.
+Attempt a deployment in default org. Apply fixes on metadata in case of errors

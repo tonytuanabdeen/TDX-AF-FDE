@@ -1,0 +1,8 @@
+Update @force-app/main/default/aiAuthoringBundles/Loan_Assistant.agent by adding a new subagent called "Loan_Request" (Label: Loan Request). 
+This will start an onboading process. 
+This agent will ask the user their first name, last name, and confirm some financial data (work situation, annual net gross), then info about the house (cost of the house, how much money they want to borrow, for how long). 
+These questions and answers will be saved as a record of @force-app/main/default/objects/Loan_Application__c/ and several @force-app/main/default/objects/Loan_QA__c/. 
+For reporting purposes, make sure the "Question" in the record is standardized. 
+Use Apex.
+The agent will recognize the contact, as this agent will be used headlessly from a mobile app where the user will be associated with a salesforce contact id
+Ask me whatever you need to know to complete the onboarding process.

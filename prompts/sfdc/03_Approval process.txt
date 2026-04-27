@@ -1,0 +1,7 @@
+Generate an approval process for the Loan_Application__c object.
+The approval process will be used to approve or reject the loan application.
+The first approver will be the one whose username is msmith@fdebank.fde.
+Upon approval, the status will be changed to "Approved".
+Upon rejection, the status will be changed to "Rejected".
+The rejection reason will be stored in the Reject_Reason__c field.
+Create an automation that moves any Loan_Application__c record with a status of "New" to a status of "Pending Approval" and will start the approval process.
