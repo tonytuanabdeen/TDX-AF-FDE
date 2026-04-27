@@ -1,0 +1,49 @@
+{
+  "required" : [ "contactId", "workSituation", "annualNetIncome", "houseCost", "loanAmount", "loanDurationMonths" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "annualNetIncome" : {
+      "title" : "Annual Net Income",
+      "description" : "Annual net income after tax.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "contactId" : {
+      "title" : "Contact Id",
+      "description" : "The Salesforce Contact ID of the applicant.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "houseCost" : {
+      "title" : "House Cost",
+      "description" : "Total purchase price of the property.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "loanAmount" : {
+      "title" : "Loan Amount",
+      "description" : "Amount the applicant wishes to borrow.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "loanDurationMonths" : {
+      "title" : "Loan Duration Months",
+      "description" : "Repayment duration in whole months.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "workSituation" : {
+      "title" : "Work Situation",
+      "description" : "Applicant's work situation (e.g. Employed Full-Time).",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}
