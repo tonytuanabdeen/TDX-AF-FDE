@@ -1,0 +1,87 @@
+## SFDC — External Client App & Agentforce API Access
+
+You are working inside the `sfdc/` directory. All previous prompts must be deployed. This prompt sets up the Salesforce-side infrastructure required by the Flutter mobile app to authenticate and call both the REST API and the Agentforce Agent API.
+
+---
+
+### 1. External Client App (Connected App)
+
+File: `connectedApps/FDE_Bank_Mobile.connectedApp-meta.xml`
+
+- Label: "FDE Bank Mobile"
+- Contact email: admin@fdebank.example
+- Description: "External app for the FDE Bank iOS mobile application. Provides OAuth 2.0 access to the Salesforce REST API for Contact data and Loan Application management."
+- OAuth flow: **Client Credentials** (not username-password, not PKCE)
+- Callback URL: `https://login.salesforce.com/services/oauth2/success`
+
+Required OAuth scopes:
+- `Api` — REST API access
+- `RefreshToken` — offline access
+- `sfap_api` (SFAP) — Salesforce API Platform
+- `EinsteinGPT` (chatbot_api) — Agentforce Agent API
+
+OAuth settings flags:
+- `isConsumerSecretOptional`: true
+- `isPkceRequired`: false
+- `isSecretRequiredForRefreshToken`: false (client credentials flow)
+- `isClientCredentialEnabled`: false (set in Policy tab post-deploy, not via metadata)
+
+After deploying, manually configure in Setup:
+1. Open the Connected App → **Policy** tab → Edit
+2. Under **Client Credentials Flow**, set **Run As** to an API-only user (e.g. the agent user or a dedicated integration user)
+3. Copy the **Consumer Key** and **Consumer Secret** from the **Settings** tab → OAuth Settings → Consumer Key and Secret
+
+---
+
+### 2. Remote Site Setting: Agentforce API
+
+File: `remoteSiteSettings/Agentforce_API.remoteSite-meta.xml`
+
+- Name: Agentforce_API
+- URL: `https://test.api.salesforce.com`
+- Active: true
+- Description: "Agentforce Agent API gateway for test/sandbox orgs"
+
+This is required for the `AgentSessionService` Apex class to make callouts.
+
+---
+
+### 3. Apex Class: AgentSessionService
+
+File: `classes/AgentSessionService.cls`
+
+An HTTP client class that manages Agentforce session lifecycle from Apex (used for server-side testing and admin tooling — the mobile app calls the Agent API directly).
+
+Methods:
+- `createSession(String contactId) → SessionResult`
+  - POST to `https://test.api.salesforce.com/einstein/ai-agent/v1/agents/{AGENT_ID}/sessions`
+  - Body includes: `externalSessionKey` (UUID), `instanceConfig.endpoint` (org instance URL), `featureSupport: "Streaming"`, `streamingCapabilities.chunkTypes: ["Text"]`, variables for `$Context.EndUserLanguage` and `salesforceContactId`
+  - Returns `SessionResult` with `sessionId` (String) and `error` (String)
+
+- `sendMessage(String sessionId, String text, Integer sequenceId) → MessageResult`
+  - POST to `.../sessions/{sessionId}/messages`
+  - Body: `message.type = "Text"`, `message.sequenceId`, `message.text`
+  - Parses `response.messages[].message.text` (type == "text"), concatenates chunks
+  - Returns `MessageResult` with `reply` (String) and `error` (String)
+
+- `endSession(String sessionId) → void`
+  - DELETE to `.../sessions/{sessionId}`
+  - Swallow exceptions silently (best-effort cleanup)
+
+Auth: use `UserInfo.getSessionId()` as the Bearer token (works in Apex context).
+Constants: hardcode `AGENT_API_BASE`, `AGENT_ID`, and `INSTANCE_URL` as private static finals.
+Include a private `generateUUID()` helper using `Crypto.generateAesKey(128)` + `EncodingUtil.convertToHex`.
+
+---
+
+### 4. Org Settings
+
+Files:
+- `settings/OrgPreference.settings-meta.xml` — enable any org preferences required for Agentforce
+- `settings/Security.settings-meta.xml` — ensure network access settings don't block the API gateway
+
+---
+
+Deploy in order: RemoteSiteSettings → settings → Apex → ConnectedApp. Fix any errors before proceeding.
+
+After deployment, copy the Consumer Key and Consumer Secret and add them to `app/lib/core/services/salesforce/salesforce_config.dart` (or the `.env` file — see `app/README_SALESFORCE.md`).

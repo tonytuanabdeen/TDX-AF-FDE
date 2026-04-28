@@ -1,0 +1,170 @@
+## Flutter Feature — Agentforce Chat Integration
+
+Replace the placeholder `MortgageChatScreen` with a real connection to the Salesforce Agentforce Agent API. Follow the existing architecture (Riverpod, GoRouter, feature-first, `#C0001E`). Output every file in full.
+
+---
+
+### Context
+
+- Authentication: `SalesforceAuthService` (client credentials) is already wired up from prompt 03.
+- `SalesforceConfig.agentId` and `SalesforceConfig.agentApiBaseUrl` are already defined.
+- The Agentforce agent ("Loan Assistant / FrED") is deployed in the Salesforce org (see `sfdc/prompts/02_Agent.txt`).
+- The agent variable `salesforceContactId` is passed as a session variable — the app reads it from `salesforceContactIdProvider`.
+
+---
+
+### 1. File Structure
+
+Extend `lib/features/mortgage/`:
+
+```
+screens/
+  mortgage_chat_screen.dart     ← replace entirely
+services/
+  agent_service.dart            ← new
+providers/
+  chat_provider.dart            ← new
+models/
+  agent_session.dart            ← new
+  chat_message.dart             ← update: add isLoading field
+```
+
+---
+
+### 2. AgentService
+
+`lib/features/mortgage/services/agent_service.dart`
+
+**createSession(String contactId) → Future\<AgentSession\>**
+
+POST `${agentApiBaseUrl}/agents/${agentId}/sessions`
+
+Request body:
+```json
+{
+  "externalSessionKey": "<uuid_v4 generated at runtime>",
+  "instanceConfig": { "endpoint": "<SalesforceConfig.instanceUrl>" },
+  "featureSupport": "Streaming",
+  "streamingCapabilities": { "chunkTypes": ["Text"] },
+  "variables": [
+    { "name": "$Context.EndUserLanguage", "type": "Text", "value": "en_US" },
+    { "name": "salesforceContactId", "type": "Text", "value": "<contactId>" }
+  ]
+}
+```
+
+Note: the variable name is `salesforceContactId` (not `ContactId`) — this must match the agent variable name exactly.
+
+Returns `AgentSession` with `sessionId`. Throws `AgentSessionException` on failure.
+
+---
+
+**sendMessage(String sessionId, String text, int sequenceId) → Future\<String\>**
+
+POST `${agentApiBaseUrl}/sessions/${sessionId}/messages`
+
+Request body:
+```json
+{
+  "message": {
+    "sequenceId": <sequenceId>,
+    "type": "Text",
+    "text": "<text>"
+  },
+  "variables": []
+}
+```
+
+Parse reply from `response.messages[].message` where `type == "text"` (case-insensitive). Concatenate multiple text chunks. Throws `AgentMessageException` on non-200.
+
+---
+
+**endSession(String sessionId) → Future\<void\>**
+
+DELETE `${agentApiBaseUrl}/sessions/${sessionId}`
+
+Best-effort — swallow all exceptions silently.
+
+---
+
+### 3. Models
+
+**AgentSession** (`lib/features/mortgage/models/agent_session.dart`):
+```dart
+class AgentSession {
+  final String sessionId;
+  factory AgentSession.fromJson(Map<String, dynamic> json);
+}
+```
+
+**ChatMessage** — update existing to add `isLoading` (bool, default false).
+
+---
+
+### 4. Providers
+
+`lib/features/mortgage/providers/chat_provider.dart`
+
+- `agentServiceProvider` — `Provider<AgentService>` (reads `salesforceAuthServiceProvider`)
+- `agentSessionProvider` — `StateProvider<AgentSession?>`
+- `chatMessagesProvider` — `StateNotifierProvider<ChatNotifier, List<ChatMessage>>`
+
+**ChatNotifier**:
+
+- `initSession(String contactId)`:
+  - Calls `AgentService.createSession(contactId)`
+  - Stores session in `agentSessionProvider`
+  - Appends agent greeting from the API response if available, otherwise fallback: "Hi! I'm FrED, FDE Bank's AI Assistant. How can I help you?"
+
+- `sendMessage(String text)`:
+  - Appends user bubble immediately
+  - Appends a loading bubble (`isLoading: true`)
+  - Calls `AgentService.sendMessage(sessionId, text, sequenceId)`
+  - Replaces loading bubble with real reply
+  - On error: replaces loading bubble with "Sorry, something went wrong. Please try again."
+  - Tracks an internal `_sequenceId` counter starting at 1, incremented per message
+
+- `endSession()`:
+  - Calls `AgentService.endSession(sessionId)`
+  - Resets state and clears `agentSessionProvider`
+
+---
+
+### 5. MortgageChatScreen
+
+Full replacement of `lib/features/mortgage/screens/mortgage_chat_screen.dart`:
+
+**Lifecycle:**
+- `initState`: call `chatNotifier.initSession(contactId)` — read contactId from `salesforceContactIdProvider`
+- `dispose`: call `chatNotifier.endSession()`
+
+**AppBar:**
+- Title: "Chat with an Agent"
+- Subtitle/badge below title: "Powered by Agentforce" (small, grey)
+- Back button: calls `chatNotifier.endSession()` before popping
+
+**Message list** (`ListView.builder`, auto-scrolls to bottom on new message):
+- User bubble: right-aligned, `#C0001E` background, white text, rounded corners
+- Agent bubble: left-aligned, light grey background, dark text, rounded corners
+- Loading bubble: left-aligned, three bouncing dots animation (`AnimatedDots` widget)
+
+**Input bar (pinned at bottom):**
+- `TextField` with hint "Type a message…"
+- Send `IconButton` in `#C0001E`
+- Disabled while a response is pending (track with a `_isSending` bool in state)
+- On send: clear field, call `chatNotifier.sendMessage(text)`
+
+**Edge cases:**
+- No contact ID saved → full-screen message: "Please link your Salesforce account in Profile before chatting with an agent" + button navigating to `/profile`
+- Session creation failure → full-screen error card with Retry button
+- Network timeout → surface as an error chat bubble, do not crash
+
+---
+
+### 6. AnimatedDots Widget
+
+Create a small `AnimatedDots` widget (three dots that pulse/bounce with staggered animation) for the loading bubble. Keep it self-contained in `lib/features/mortgage/widgets/`.
+
+---
+
+Output every file in full. After the last file, provide a summary table: File Path | Purpose.

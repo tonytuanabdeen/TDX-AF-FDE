@@ -1,0 +1,142 @@
+## Flutter Feature — Salesforce Integration & Profile Screen
+
+Add live Salesforce connectivity to the FDE Bank app. The authentication flow is **OAuth 2.0 Client Credentials** (not username-password). Follow the existing architecture (Riverpod, GoRouter, feature-first, `#C0001E`). Output every file in full.
+
+---
+
+### Context
+
+The Salesforce org has an External Client App configured with Client Credentials flow (see `sfdc/prompts/05_External Client App.txt`). The mobile app authenticates with `clientId` + `clientSecret` to obtain a Bearer token, then calls the REST API. There is no user login — the app is a kiosk-style demo where the Salesforce Contact ID is set manually in the Profile screen.
+
+---
+
+### 1. File Structure
+
+```
+lib/core/services/salesforce/
+  salesforce_config.dart        ← credentials config (fill in after deploying sfdc prompt 05)
+  salesforce_http_client.dart   ← thin wrapper around dart:http
+  salesforce_auth_service.dart  ← OAuth client credentials token fetch + cache
+  salesforce_contact_service.dart
+
+lib/features/profile/
+  screens/profile_screen.dart   ← update existing
+  providers/contact_provider.dart
+  models/contact_model.dart
+```
+
+---
+
+### 2. SalesforceConfig
+
+`lib/core/services/salesforce/salesforce_config.dart`
+
+```dart
+abstract class SalesforceConfig {
+  static const String instanceUrl    = '';   // e.g. https://yourorg.my.salesforce.com
+  static const String apiVersion     = 'v65.0';
+  static const String clientId       = '';   // Consumer Key from External Client App
+  static const String clientSecret   = '';   // Consumer Secret
+  static const String agentId        = '';   // 18-char Agent ID from Agent Builder
+  static const String agentApiBaseUrl = 'https://test.api.salesforce.com/einstein/ai-agent/v1';
+}
+```
+
+Leave all values as empty strings. The developer fills them in (or uses `.env` — see `app/README_SALESFORCE.md`).
+
+---
+
+### 3. SalesforceHttpClient
+
+`lib/core/services/salesforce/salesforce_http_client.dart`
+
+Thin wrapper around `dart:io` / `package:http` that adds a configurable timeout (default 30 s). Exposes `get`, `post`, `delete` — nothing else.
+
+---
+
+### 4. SalesforceAuthService
+
+`lib/core/services/salesforce/salesforce_auth_service.dart`
+
+- `Future<String> getAccessToken({bool forceRefresh = false})` — client credentials POST to `${instanceUrl}/services/oauth2/token` with `grant_type=client_credentials`, `client_id`, `client_secret`.
+- Cache the token in a private field. Return the cached value unless `forceRefresh` is true.
+- `void clearToken()` — clears the cache.
+- Throw `SalesforceAuthException(message)` on non-200 responses.
+
+---
+
+### 5. SalesforceContactService
+
+`lib/core/services/salesforce/salesforce_contact_service.dart`
+
+- `Future<ContactModel> getContact(String contactId)`
+  - `GET /services/data/{apiVersion}/sobjects/Contact/{contactId}`
+  - Fields to request: `Id,FirstName,LastName,Email,Phone,Current_Balance__c`
+  - On HTTP 401: call `clearToken()` and retry once
+  - On HTTP 404: throw `ContactNotFoundException`
+
+---
+
+### 6. ContactModel
+
+`lib/features/profile/models/contact_model.dart`
+
+```dart
+class ContactModel {
+  final String id;
+  final String fullName;         // FirstName + ' ' + LastName
+  final String? email;
+  final String? phone;
+  final double? currentBalance;  // Current_Balance__c
+
+  factory ContactModel.fromJson(Map<String, dynamic> json);
+  ContactModel copyWith({...});
+}
+```
+
+---
+
+### 7. Providers
+
+`lib/features/profile/providers/contact_provider.dart`
+
+- `salesforceAuthServiceProvider` — `Provider<SalesforceAuthService>`
+- `salesforceContactServiceProvider` — `Provider<SalesforceContactService>`
+- `contactProvider` — `FutureProvider<ContactModel?>`:
+  - Reads `salesforceContactIdProvider`
+  - Returns `null` if no ID is saved
+  - Calls `SalesforceContactService.getContact(contactId)` otherwise
+
+---
+
+### 8. ProfileScreen
+
+Update `lib/features/profile/screens/profile_screen.dart` to consume `contactProvider`:
+
+**Three states:**
+- Loading → `CircularProgressIndicator` in `#C0001E`
+- Error → friendly error card with a "Retry" button (`ref.invalidate(contactProvider)`)
+- No contact ID → prompt card: "Link your account to get started" with the edit icon
+
+**When data is loaded:**
+- Initials avatar circle in `#C0001E` at the top
+- Full name (large)
+- Email row (mail icon)
+- Phone row (phone icon)
+- Current Balance card with `#C0001E` accent, value formatted as currency (e.g. `$12,450.00`)
+- Contact ID row at the bottom (small, with edit icon to update it)
+
+---
+
+### 9. README_SALESFORCE.md
+
+Create `app/README_SALESFORCE.md` with instructions for:
+1. Creating the External Client App in Salesforce Setup (refer to `sfdc/prompts/05_External Client App.txt` for the full Salesforce-side setup)
+2. Finding the Agent ID
+3. Filling in `salesforce_config.dart`
+4. Using `.env` instead of hardcoding credentials
+5. Setting the Contact ID in the Profile screen
+
+---
+
+Output every file in full. After the last file, provide a summary table: File Path | Purpose.

@@ -1,7 +1,50 @@
-Generate an approval process for the Loan_Application__c object.
-The approval process will be used to approve or reject the loan application.
-The first approver will be the one whose username is msmith@fdebank.fde.
-Upon approval, the status will be changed to "Approved".
-Upon rejection, the status will be changed to "Rejected".
-The rejection reason will be stored in the Reject_Reason__c field.
-Create an automation that moves any Loan_Application__c record with a status of "New" to a status of "Pending Approval" and will start the approval process.
+## SFDC — Loan Application Approval Process
+
+You are working inside the `sfdc/` directory. The Loan_Application__c object and Status__c / Reject_Reason__c fields from prompt 01 must already be deployed. Use `sf` CLI, API version 62.0, source format. Deploy and fix errors iteratively.
+
+---
+
+### 1. Approval Process
+
+File: `approvalProcesses/Loan_Application__c.Loan_Application_Approval.approvalProcess-meta.xml`
+
+- Object: Loan_Application__c
+- Name: Loan_Application_Approval
+- Entry criteria: Status__c = "Pending Approval"
+- Approver: user with username `msmith@fdebank.fde` (single approver, no delegation)
+- On **approval**: update Status__c to "Approved"
+- On **rejection**: update Status__c to "Rejected"
+- Rejection reason field: Reject_Reason__c (the approver's comment should populate this field)
+- Initial submitter: allow record owner to submit
+- Record editability during approval: locked (administrator only)
+
+---
+
+### 2. Automation: Submit on New → Pending Approval
+
+Create a Record-Triggered Flow (or Apex trigger — choose whichever deploys cleanly to the scratch org) that:
+
+- Triggers when a `Loan_Application__c` record is **created** with `Status__c = 'New'`
+- Updates `Status__c` to `'Pending Approval'`
+- Submits the record into the `Loan_Application_Approval` approval process
+
+If using a Flow:
+File: `flows/Loan_Application_Submit_For_Approval.flow-meta.xml`
+- Trigger: Record Created, object Loan_Application__c, condition: Status__c = "New"
+- Action: Submit for Approval (use the Submit for Approval core action)
+
+If using an Apex Trigger:
+File: `triggers/LoanApplicationApprovalTrigger.trigger`
+- `after insert` trigger
+- Filter: `trigger.new` records where Status__c = 'New'
+- Use `Approval.ProcessSubmitRequest` to submit programmatically
+
+---
+
+### 3. Workflow / Email Alert (optional)
+
+If needed for notifications, add a workflow rule or process that emails the applicant when the status changes to Approved or Rejected. Keep this minimal — just a status-change email to the Contact email.
+
+---
+
+Deploy and verify the approval process activates correctly. Run `sf apex run test --synchronous` to confirm no test regressions.

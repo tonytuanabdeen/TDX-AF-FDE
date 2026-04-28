@@ -1,16 +1,31 @@
-Flutter App Scaffold Prompt: FDE BankYou are a senior Flutter developer. Generate a complete, well-structured Flutter project scaffold for a home banking application called "FDE Bank". This is a scaffold only — no real banking logic needed, just clean architecture and placeholder screens. Do not truncate any file. Output every file with its full path.———1. Project & Platform
-Flutter project name: fde_bank
-Target platform: iOS (include proper ios/ configuration)
-Minimum iOS version: 16.0
-Use the latest stable Flutter SDK conventions
-2. Brand
-Primary brand color: #C0001E (FDE Bank red)
-Use a ThemeData with ColorScheme.fromSeed(seedColor: Color(0xFFC0001E))
-Define the theme in a dedicated lib/theme/app_theme.dart file
-App name displayed on device: "FDE Bank"
-Use a simple placeholder app icon (red background, white "FB" text — provide flutter_launcher_icons config)
-3. Architecture
-Use feature-first folder structure:
+## Flutter App — Scaffold: FDE Bank
+
+You are a senior Flutter developer. Scaffold a home banking app called "FDE Bank" inside the `app/` directory of this project. This is a scaffold — no real banking logic, just clean architecture and placeholder screens. Output every file with its full path. Do not truncate any file.
+
+---
+
+### 1. Project
+
+- Flutter project name: `fde_bank`
+- Target platform: iOS (include `ios/` configuration)
+- Minimum iOS version: 16.0
+- UI style: hybrid Material/Cupertino feel with icons — not pure Cupertino, not pure Material
+
+---
+
+### 2. Brand
+
+- Primary color: `#C0001E` (FDE Bank red)
+- `ThemeData` using `ColorScheme.fromSeed(seedColor: Color(0xFFC0001E))`
+- Theme defined in `lib/theme/app_theme.dart`
+- App display name: "FDE Bank"
+- App icon: red background, white "FB" text — configure `flutter_launcher_icons` in `pubspec.yaml`
+
+---
+
+### 3. Architecture — feature-first
+
+```
 lib/
   main.dart
   app.dart
@@ -18,50 +33,95 @@ lib/
     app_theme.dart
   core/
     constants/
+      app_constants.dart        ← defines sfContactIdKey = 'sf_contact_id'
     services/
+      salesforce_service.dart   ← see point 5
     utils/
+      formatters.dart           ← currency formatter helper
   features/
     home/
+      screens/home_screen.dart
     accounts/
+      screens/accounts_screen.dart
     payments/
+      screens/payments_screen.dart
     profile/
+      screens/profile_screen.dart
   shared/
     widgets/
+      main_scaffold.dart        ← bottom nav + shell route
+      placeholder_card.dart
     models/
-Use Riverpod for state management (flutter_riverpod)
-Use GoRouter for navigation
-Use shared_preferences for local persistence (used for the Salesforce Contact ID — see point 5)
-4. Screens (placeholder UI, branded)
-Generate the following screens, each with an AppBar and a centered placeholder Text widget:
-HomeScreen — greeting + placeholder account balance card
-AccountsScreen — placeholder list of accounts
-PaymentsScreen — placeholder payment form
-ProfileScreen — user profile, this is where the Salesforce Contact ID is displayed and editable (see point 5)
-Use a BottomNavigationBar (or NavigationBar) with icons for: Home, Accounts, Payments, Profile.5. Salesforce Contact ID Storage
-Create a lib/core/services/salesforce_service.dart with:
-A method Future<String?> getContactId() — reads from shared_preferences key sf_contact_id
-A method Future<void> setContactId(String id) — writes to shared_preferences
-A method Future<void> clearContactId() — clears the key
+      account_model.dart        ← placeholder Account model
+```
 
-In ProfileScreen, show the stored Contact ID (or "Not linked" if null), with an edit icon that opens a dialog to update it
-Expose a salesforceContactIdProvider (Riverpod StateNotifierProvider or AsyncNotifierProvider) so any feature can read it
-6. Dependencies (pubspec.yaml)
-Include:
-flutter_riverpod
-go_router
-shared_preferences
-flutter_launcher_icons (dev dependency)
-google_fonts (use a clean sans-serif, e.g. Inter or DM Sans)
-7. iOS-specific
-Set CFBundleDisplayName to FDE Bank in Info.plist
-Set IPHONEOS_DEPLOYMENT_TARGET to 16.0 in Podfile and project.pbxproj
-Include a placeholder GoogleService-Info.plist note (comment in README)
-8. README
-Generate a README.md with:
-Project overview
-How to run on iOS simulator
-How to set/read the Salesforce Contact ID
-Architecture overview (short)
-"Coming soon" section for future features
-Output all files. After the last file, include a summary table: File Path | Purpose.
-Place the files under the app/ folder
+State management: `flutter_riverpod`
+Navigation: `go_router` with a ShellRoute for the bottom nav
+Local persistence: `shared_preferences`
+
+---
+
+### 4. Screens
+
+Each screen has an AppBar and branded placeholder content:
+
+- **HomeScreen** — greeting ("Good morning!") + placeholder account balance card with `#C0001E` accent + a "Request a Mortgage" card/button (route: `/mortgage`, wired up in prompt 02)
+- **AccountsScreen** — placeholder list of 2–3 mock accounts
+- **PaymentsScreen** — placeholder payment form
+- **ProfileScreen** — displays the Salesforce Contact ID (see point 5)
+
+Bottom nav icons: Home, Accounts, Payments, Profile.
+
+---
+
+### 5. Salesforce Contact ID
+
+`lib/core/services/salesforce_service.dart`:
+- `Future<String?> getContactId()` — reads `shared_preferences` key `sf_contact_id`
+- `Future<void> setContactId(String id)` — writes the key
+- `Future<void> clearContactId()` — deletes the key
+
+`salesforceContactIdProvider` — `AsyncNotifierProvider<SalesforceContactIdNotifier, String?>` that loads from `shared_preferences` on init and exposes `setContactId` / `clearContactId`.
+
+ProfileScreen: shows the stored ID (or "Not linked"), with an edit icon that opens an `AlertDialog` to update it.
+
+---
+
+### 6. Dependencies
+
+```yaml
+dependencies:
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.0
+  shared_preferences: ^2.3.2
+  google_fonts: ^6.2.1
+  http: ^1.2.2
+  flutter_dotenv: ^5.2.1
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+```
+
+---
+
+### 7. iOS
+
+- `CFBundleDisplayName`: "FDE Bank" in `ios/Runner/Info.plist`
+- `IPHONEOS_DEPLOYMENT_TARGET`: 16.0 in Podfile and `project.pbxproj`
+
+---
+
+### 8. README.md
+
+Generate `app/README.md` covering:
+- Project overview
+- How to run on iOS simulator
+- Architecture overview
+- How to set/read the Salesforce Contact ID
+- "Coming soon" section (mortgage chat, live account data)
+
+---
+
+Place all files under `app/`. After the last file, include a summary table: File Path | Purpose.

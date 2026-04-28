@@ -1,32 +1,110 @@
-Salesforce Metadata Prompt: FDE Bank Lightning Console AppYou are a Salesforce metadata expert. Generate complete, deployment-ready Salesforce metadata XML for the following setup. Output each file with its full filename path (e.g. objects/Loan_Application__c.object-meta.xml). Do not truncate any file. After all XML, provide a summary table of all files generated.———1. Custom Object: Loan_Application__cCreate a custom object with:
-Label: "Loan Application", Plural: "Loan Applications"
-A Name field (auto-number format: LA-{0000})
-A Status picklist field with values: New (default), Pending Approval, Approved, Rejected
-A Reject Reason long text area field (255 chars), only relevant when status is Rejected
-A lookup to Account (Person Account), labeled "Applicant", required
-Loan Questions & Answers: model this as a related child object Loan_QA__c with fields: Question__c (text, 255), Answer__c (long text area, 32768), Loan_Application__c (master-detail to Loan_Application__c). This allows flexible, d Q&A storage without schema changes.
-Enable: Activities, Feed Tracking, Search
-2. Page Layout: Loan_Application__c-Loan Application Layout
-Header section: Name, Status, Applicant
-Details section: Reject Reason (full width)
-Related lists: Loan Q&A entries, Activity History, Chatter Feed
-3. FlexiPage: Loan_Application_Record_Page
-Type: RecordPage, object: Loan_Application__c
-Set as the org default for this object (<activationContext> with type = Org)
-Layout: highlights panel at top, then tabs: Details | Q&A (related list) | Activity | Chatter
-4. Profile Permissions — System AdministratorIn the Admin.profile-meta.xml (or a profile patch file), grant on Loan_Application__c and Loan_QA__c:
-allowCreate, allowRead, allowEdit, allowDelete, modifyAllRecords, viewAllRecords = true
-5. Permission Set: Customer_Support
-Label: "Customer Support"
-On Account: allowCreate, allowRead, allowEdit, allowDelete = true
-On Loan_Application__c: allowCreate, allowRead, allowEdit, allowDelete = true
-On Loan_QA__c: allowCreate, alloead, allowEdit, allowDelete = true
-App access: grant access to the FDE_Bank app
-6. Lightning App: FDE_Bank
-Label: "FDE Bank"
-isConsole: true (Lightning Console app)
-Brand color: #C0001E (dark red)
-Nav items: Home, Loan_Application__c, Account, Report, Dashboard
-Utility bar: include Recent Items and Notes utilities
-Output all metadata files. Use API version 62.0. Follow Salesforce DX source format. Include a package.xml that covers all types generated.
-Attempt a deployment in default org. Apply fixes on metadata in case of errors
+## SFDC — Data Model, UI & Permissions
+
+You are working inside the `sfdc/` directory of a Salesforce DX project targeting a scratch org aliased `fde_bank`. Use `sf` CLI, API version 62.0, source-format metadata. After generating each file, deploy to the default org and fix any errors before continuing.
+
+---
+
+### 1. Custom Object: Loan_Application__c
+
+- Label: "Loan Application" / Plural: "Loan Applications"
+- Auto-number Name field — format: `LA-{0000}`, starting at 1
+- Sharing model: ReadWrite
+- Enable: Activities, Feed Tracking, Search, Reports
+
+Custom fields:
+
+| API Name | Type | Details |
+|---|---|---|
+| Status__c | Picklist | Values: New (default), Pending Approval, Approved, Rejected |
+| Reject_Reason__c | LongTextArea | Length 255 |
+| Applicant__c | Lookup → Account | Label "Applicant", required |
+| Contact__c | Lookup → Contact | Label "Contact", required |
+| Work_Situation__c | Picklist | Values: Employed Full-Time, Employed Part-Time, Self-Employed, Unemployed, Retired, Student |
+| Annual_Net_Income__c | Currency | Precision 16, Scale 2 |
+| House_Cost__c | Currency | Precision 16, Scale 2 |
+| Loan_Amount__c | Currency | Precision 16, Scale 2 |
+| Loan_Duration_Months__c | Number | Integer, no decimals |
+
+---
+
+### 2. Custom Object: Loan_QA__c
+
+- Label: "Loan Q&A" / Plural: "Loan Q&As"
+- Auto-number Name field — format: `QA-{0000}`, starting at 1
+- Sharing model: ControlledByParent
+
+Custom fields:
+
+| API Name | Type | Details |
+|---|---|---|
+| Loan_Application__c | Master-Detail → Loan_Application__c | Label "Loan Application", required |
+| Question__c | Text | Length 255, required |
+| Answer__c | LongTextArea | Length 32768 |
+
+---
+
+### 3. Page Layout: Loan_Application__c
+
+File: `layouts/Loan_Application__c-Loan Application Layout.layout-meta.xml`
+
+- Header section: Name, Status, Applicant, Contact
+- Details section: Work Situation, Annual Net Income, House Cost, Loan Amount, Loan Duration (Months), Reject Reason (full width)
+- Related lists: Loan Q&A entries, Activity History, Chatter Feed
+
+---
+
+### 4. FlexiPage: Loan_Application_Record_Page
+
+File: `flexipages/Loan_Application_Record_Page.flexipage-meta.xml`
+
+- Type: RecordPage, object: Loan_Application__c
+- Activation: Org default (`<activationContext><type>Org</type></activationContext>`)
+- Layout: highlights panel at top, then tabs: Details | Q&A (related list) | Activity | Chatter
+
+---
+
+### 5. Object Tabs
+
+- `tabs/Loan_Application__c.tab-meta.xml` — motif: Custom63
+- `tabs/Loan_QA__c.tab-meta.xml` — motif: Custom64
+
+---
+
+### 6. Lightning Console App: FDE_Bank
+
+File: `applications/FDE_Bank.app-meta.xml`
+
+- Label: "FDE Bank"
+- isConsole: true
+- Brand color: #C0001E
+- Nav items: Home, Loan_Application__c tab, Account, Reports, Dashboards
+- Utility bar: Recent Items, Notes
+
+---
+
+### 7. Profile: Admin
+
+File: `profiles/Admin.profile-meta.xml`
+
+Grant on Loan_Application__c and Loan_QA__c:
+`allowCreate, allowRead, allowEdit, allowDelete, modifyAllRecords, viewAllRecords = true`
+
+---
+
+### 8. Permission Set: Customer_Support
+
+File: `permissionsets/Customer_Support.permissionset-meta.xml`
+
+- Label: "Customer Support"
+- Object permissions on Account, Loan_Application__c, Loan_QA__c: allowCreate, allowRead, allowEdit, allowDelete = true
+- App access: FDE_Bank
+
+---
+
+### 9. package.xml
+
+Cover all metadata types generated above. Target API version 62.0.
+
+---
+
+Deploy the full metadata set. Report any deployment errors and fix them in the source before re-deploying.
