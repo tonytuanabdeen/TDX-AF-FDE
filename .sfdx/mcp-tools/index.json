@@ -1,7 +1,7 @@
 {
   "serverName": "https://github.com/salesforcecli/mcp",
   "toolCount": 74,
-  "generatedAt": "2026-04-28T05:34:56.571Z",
+  "generatedAt": "2026-04-28T12:02:43.606Z",
   "tools": [
     {
       "name": "get_username",
