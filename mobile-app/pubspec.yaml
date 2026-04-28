@@ -1,0 +1,53 @@
+name: fde_bank
+description: FDE Bank — Home Banking Application
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Local persistence
+  shared_preferences: ^2.3.2
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # HTTP client for Salesforce REST API
+  http: ^1.2.2
+
+  # Secrets management (see README_SALESFORCE.md for setup)
+  # To activate: add a .env file and add `- .env` under flutter > assets
+  flutter_dotenv: ^5.2.1
+
+  # UUID generation for Agentforce session keys
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: false
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  ios_content_mode: scaleAspectFit
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    # Uncomment the line below after creating a .env file (see README_SALESFORCE.md)
+    # - .env
