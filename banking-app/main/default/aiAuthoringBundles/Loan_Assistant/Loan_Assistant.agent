@@ -2,7 +2,7 @@ system:
     instructions: "You are an AI Agent."
     messages:
         welcome: |
-            Hi, I'm an AI service assistant. How can I help you?
+            Hi, I'm FrED, FDE Bank's AI Assistant. How can I help you?
         error: "Sorry, it looks like something has gone wrong."
 
 config:
@@ -13,8 +13,8 @@ config:
     default_agent_user: "loan_assistant@00dob000001yrzf677981208.ext"
 
 variables:
-    salesforceContactId: linked string
-        source: @MessagingEndUser.ContactId
+    salesforceContactId: mutable string = ""
+        visibility: "External"
     contact_first_name: mutable string = ""
     contact_last_name: mutable string = ""
     contact_account_id: mutable string = ""
@@ -154,6 +154,11 @@ topic loan_request:
             create_loan_application: @actions.create_loan_application
                 description: "Call this once all financial details have been collected and the user has confirmed they want to submit."
                 with contactId = @variables.salesforceContactId
+                with workSituation = ...
+                with annualNetIncome = ...
+                with houseCost = ...
+                with loanAmount = ...
+                with loanDurationMonths = ...
                 set @variables.loan_application_id = @outputs.loanApplicationId
                 set @variables.loan_application_name = @outputs.loanApplicationName
                 available when @variables.loan_application_id == ""

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Loan_Application_Submit_For_Approval</fullName>
+    <apiVersion>62.0</apiVersion>
+    <description>When a Loan Application is created or updated with Status = New, sets it to Pending Approval and submits it to the approval process.</description>
+    <label>Loan Application: Submit For Approval</label>
+    <processType>AutoLaunchedFlow</processType>
+    <status>Active</status>
+    <start>
+        <locationX>176</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Update_Status_To_Pending</targetReference>
+        </connector>
+        <filterFormula>ISPICKVAL({!$Record.Status__c}, "New")</filterFormula>
+        <object>Loan_Application__c</object>
+        <recordTriggerType>CreateAndUpdate</recordTriggerType>
+        <triggerType>RecordAfterSave</triggerType>
+    </start>
+    <recordUpdates>
+        <name>Update_Status_To_Pending</name>
+        <label>Update Status to Pending Approval</label>
+        <locationX>176</locationX>
+        <locationY>120</locationY>
+        <connector>
+            <targetReference>Submit_To_Approval</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </filters>
+        <inputAssignments>
+            <field>Status__c</field>
+            <value>
+                <stringValue>Pending Approval</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Loan_Application__c</object>
+    </recordUpdates>
+    <actionCalls>
+        <name>Submit_To_Approval</name>
+        <label>Submit to Approval Process</label>
+        <locationX>176</locationX>
+        <locationY>240</locationY>
+        <actionName>submit</actionName>
+        <actionType>submit</actionType>
+        <inputParameters>
+            <name>objectId</name>
+            <value>
+                <elementReference>$Record.Id</elementReference>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>processDefinitionNameOrId</name>
+            <value>
+                <stringValue>Loan_Application_Approval</stringValue>
+            </value>
+        </inputParameters>
+        <inputParameters>
+            <name>skipEntryCriteria</name>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </inputParameters>
+    </actionCalls>
+</Flow>
