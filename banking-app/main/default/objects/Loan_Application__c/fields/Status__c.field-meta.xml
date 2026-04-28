@@ -2,31 +2,33 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
     <label>Status</label>
-    <type>Picklist</type>
     <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
                 <fullName>New</fullName>
-                <label>New</label>
                 <default>true</default>
+                <label>New</label>
             </value>
             <value>
                 <fullName>Pending Approval</fullName>
-                <label>Pending Approval</label>
                 <default>false</default>
+                <label>Pending Approval</label>
             </value>
             <value>
                 <fullName>Approved</fullName>
-                <label>Approved</label>
                 <default>false</default>
+                <label>Approved</label>
             </value>
             <value>
                 <fullName>Rejected</fullName>
-                <label>Rejected</label>
                 <default>false</default>
+                <label>Rejected</label>
             </value>
         </valueSetDefinition>
     </valueSet>

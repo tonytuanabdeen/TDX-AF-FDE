@@ -2,41 +2,43 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Work_Situation__c</fullName>
     <label>Work Situation</label>
-    <type>Picklist</type>
     <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
                 <fullName>Employed Full-Time</fullName>
-                <label>Employed Full-Time</label>
                 <default>false</default>
+                <label>Employed Full-Time</label>
             </value>
             <value>
                 <fullName>Employed Part-Time</fullName>
-                <label>Employed Part-Time</label>
                 <default>false</default>
+                <label>Employed Part-Time</label>
             </value>
             <value>
                 <fullName>Self-Employed</fullName>
-                <label>Self-Employed</label>
                 <default>false</default>
+                <label>Self-Employed</label>
             </value>
             <value>
                 <fullName>Unemployed</fullName>
-                <label>Unemployed</label>
                 <default>false</default>
+                <label>Unemployed</label>
             </value>
             <value>
                 <fullName>Retired</fullName>
-                <label>Retired</label>
                 <default>false</default>
+                <label>Retired</label>
             </value>
             <value>
                 <fullName>Student</fullName>
-                <label>Student</label>
                 <default>false</default>
+                <label>Student</label>
             </value>
         </valueSetDefinition>
     </valueSet>

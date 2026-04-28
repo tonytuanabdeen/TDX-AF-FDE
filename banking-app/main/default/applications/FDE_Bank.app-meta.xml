@@ -4,12 +4,27 @@
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
+    <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>FDE Bank</label>
     <navType>Console</navType>
     <tabs>standard-home</tabs>
+    <tabs>standard-Account</tabs>
     <tabs>Loan_Application__c</tabs>
     <tabs>Loan_QA__c</tabs>
-    <tabs>standard-Account</tabs>
     <uiType>Lightning</uiType>
-
+    <workspaceConfig>
+        <mappings>
+            <tab>Loan_Application__c</tab>
+        </mappings>
+        <mappings>
+            <tab>Loan_QA__c</tab>
+        </mappings>
+        <mappings>
+            <tab>standard-Account</tab>
+        </mappings>
+        <mappings>
+            <tab>standard-home</tab>
+        </mappings>
+    </workspaceConfig>
 </CustomApplication>

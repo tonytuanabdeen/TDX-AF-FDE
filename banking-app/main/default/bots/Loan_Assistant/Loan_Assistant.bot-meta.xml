@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bot xmlns="http://soap.sforce.com/2006/04/metadata">
+    <agentDSLEnabled>true</agentDSLEnabled>
+    <agentTemplate>SvcCopilotTmpl__AgentforceServiceAgent</agentTemplate>
+    <agentType>EinsteinServiceAgent</agentType>
+    <botMlDomain>
+        <label>Loan Assistant</label>
+        <name>Loan_Assistant</name>
+    </botMlDomain>
+    <botSource>None</botSource>
+    <botUser>loan_assistant@00dob000001yrzf677981208.ext</botUser>
+    <contextVariables>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>Custom</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>Line</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>AppleBusinessChat</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>Text</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>WhatsApp</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>Facebook</messageType>
+        </contextVariableMappings>
+        <contextVariableMappings>
+            <SObjectType>MessagingEndUser</SObjectType>
+            <fieldName>MessagingEndUser.ContactId</fieldName>
+            <messageType>EmbeddedMessaging</messageType>
+        </contextVariableMappings>
+        <dataType>Text</dataType>
+        <description>SalesforceContactId</description>
+        <developerName>salesforceContactId</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Salesforce Contact Id</label>
+    </contextVariables>
+    <description>Deliver personalized customer interactions with an autonomous AI agent. Agentforce Service Agent intelligently supports your customers with common inquiries and escalates complex issues.</description>
+    <label>Loan Assistant</label>
+    <logPrivateConversationData>false</logPrivateConversationData>
+    <richContentEnabled>true</richContentEnabled>
+    <sessionTimeout>0</sessionTimeout>
+    <type>ExternalCopilot</type>
+</Bot>
