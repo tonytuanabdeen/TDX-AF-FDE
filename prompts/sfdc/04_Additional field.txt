@@ -1,0 +1,43 @@
+## SFDC — Current Balance Field on Contact
+
+You are working inside the `sfdc/` directory. All previous prompts must already be deployed. Use `sf` CLI, API version 62.0, source format. Deploy and fix errors.
+
+---
+
+### 1. Custom Field: Current_Balance__c on Contact
+
+File: `objects/Contact/fields/Current_Balance__c.field-meta.xml`
+
+- Object: Contact
+- Type: Currency
+- Label: "Current Balance"
+- API name: Current_Balance__c
+- Precision: 16, Scale: 2
+- Required: false
+- Default value: 0
+
+---
+
+### 2. Profile: Admin
+
+In `profiles/Admin.profile-meta.xml`, add `<fieldPermissions>` for `Contact.Current_Balance__c`:
+- readable: true
+- editable: true
+
+---
+
+### 3. Permission Set: Customer_Support
+
+In `permissionsets/Customer_Support.permissionset-meta.xml`, add `<fieldPermissions>` for `Contact.Current_Balance__c`:
+- readable: true
+- editable: true
+
+---
+
+### 4. Page Layout: Contact
+
+In `layouts/Contact-Contact Layout.layout-meta.xml`, add `Current_Balance__c` to a "Financial Information" section (create it if it doesn't exist).
+
+---
+
+Deploy the changes. This field is consumed by the Flutter mobile app's Profile screen — it must be readable via the REST API with the `api` OAuth scope.

@@ -1,0 +1,99 @@
+## Flutter Feature — Mortgage Wizard (Placeholder)
+
+Add a "Request a Mortgage" feature to the FDE Bank app. Follow the existing architecture (Riverpod, GoRouter, feature-first, `#C0001E` brand color). This is a local-only wizard — no backend calls yet (Agentforce integration comes in prompt 04). Output every file in full.
+
+---
+
+### 1. Feature Folder
+
+```
+lib/features/mortgage/
+  screens/
+    mortgage_wizard_screen.dart
+    mortgage_chat_screen.dart   ← placeholder only, replaced in prompt 04
+  widgets/
+    wizard_progress_bar.dart
+    question_input.dart
+  providers/
+    mortgage_provider.dart
+  models/
+    mortgage_application.dart
+    mortgage_question.dart
+```
+
+---
+
+### 2. MortgageQuestion Model
+
+`lib/features/mortgage/models/mortgage_question.dart`
+
+```dart
+enum InputType { text, currency, picklist, yesNo, yesNoWithDetail }
+
+class MortgageQuestion {
+  final String id;
+  final String questionText;
+  final InputType inputType;
+  final List<String> options;   // for picklist
+}
+```
+
+---
+
+### 3. Questions (these map to what the Agentforce agent asks in `sfdc/prompts/02_Agent.txt`)
+
+The wizard collects the same data the agent collects — in the same order — so the answers can be pre-filled when the user switches to chat:
+
+1. What is your current work situation? (picklist: Employed Full-Time, Employed Part-Time, Self-Employed, Unemployed, Retired, Student)
+2. What is your annual net income (after tax)? (currency)
+3. What is the total purchase price of the property? (currency)
+4. How much would you like to borrow? (currency)
+5. Over how many months would you like to repay the loan? (text/number)
+
+---
+
+### 4. MortgageWizardScreen
+
+- One question per screen, progress bar at top (step X of N)
+- Back / Next / Submit buttons
+- Final step: summary of all answers before submission
+- On submit: save answers to `shared_preferences` (key: `mortgage_draft`), show a confirmation snackbar
+- Wizard state managed by `MortgageNotifier` (Riverpod `StateNotifier`)
+
+---
+
+### 5. "Chat with an Agent" CTA
+
+On the intro screen (before question 1), below the "Start" button:
+
+> "Prefer to talk to someone? Chat with an agent →"
+
+- Styled as a `TextButton` in `#C0001E`
+- Navigates to `/mortgage/chat`
+
+---
+
+### 6. MortgageChatScreen (placeholder)
+
+**This screen will be replaced entirely in prompt 04.** For now:
+
+- AppBar: "Chat with an Agent", back button
+- Scrollable message list with a single hardcoded agent greeting: "Hi! I'm your FDE Bank mortgage advisor. How can I help you today?"
+- Bottom input bar (TextField + send IconButton in `#C0001E`)
+- Messages stored in `StateProvider<List<ChatMessage>>`
+- Agent replies with: "Thanks for your message! A real advisor will be with you shortly."
+- `ChatMessage` model: `id`, `text`, `isUser` (bool), `timestamp`
+
+---
+
+### 7. Navigation
+
+Add to GoRouter (update `app/lib/core/router/app_router.dart`):
+- `/mortgage` → `MortgageWizardScreen`
+- `/mortgage/chat` → `MortgageChatScreen`
+
+The "Request a Mortgage" card on HomeScreen navigates to `/mortgage`.
+
+---
+
+Output every file in full. After the last file, provide a summary table: File Path | Purpose.
