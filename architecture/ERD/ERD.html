@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FDE Bank - Entity Relationship Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --sf-navy: #032D60;
+            --sf-blue: #0176D3;
+            --sf-cloud: #1B96FF;
+            --sf-link: #0176D3;
+            --sf-success: #2E844A;
+            --sf-warning: #DD7A01;
+            --sf-error: #EA001E;
+            --sf-bg: #F3F3F3;
+            --sf-white: #FFFFFF;
+            --sf-border: #C9C9C9;
+            --sf-border-light: #E5E5E5;
+            --sf-text: #181818;
+            --sf-text-muted: #706E6B;
+            --sf-text-inverse: #FFFFFF;
+            --sf-purple: #730394;
+            --sf-orange: #DD7A01;
+            --sf-sidebar-width: 260px;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', 'Salesforce Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--sf-bg);
+            color: var(--sf-text);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar Navigation ── */
+        .wiki-sidebar {
+            width: var(--sf-sidebar-width);
+            background: var(--sf-navy);
+            color: var(--sf-text-inverse);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .sidebar-brand svg {
+            width: 28px;
+            height: 20px;
+            fill: var(--sf-cloud);
+        }
+
+        .sidebar-brand span {
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar-section {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .sidebar-section-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.45);
+            padding: 0 1rem 0.4rem;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 0.4rem 1rem 0.4rem 1.25rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 0.82rem;
+            border-left: 3px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border-left-color: var(--sf-cloud);
+        }
+
+        .sidebar-link.active {
+            background: rgba(27,150,255,0.15);
+            color: #fff;
+            border-left-color: var(--sf-cloud);
+            font-weight: 500;
+        }
+
+        .sidebar-link.indent { padding-left: 2rem; font-size: 0.78rem; }
+
+        /* ── Main Content ── */
+        .wiki-main {
+            margin-left: var(--sf-sidebar-width);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .wiki-header {
+            background: var(--sf-white);
+            border-bottom: 1px solid var(--sf-border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .breadcrumb {
+            font-size: 0.8rem;
+            color: var(--sf-text-muted);
+        }
+
+        .breadcrumb a {
+            color: var(--sf-link);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { margin: 0 0.35rem; color: var(--sf-border); }
+
+        .wiki-content {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ── Page Title ── */
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--sf-navy);
+            margin-bottom: 0.25rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            color: var(--sf-text-muted);
+            margin-bottom: 2rem;
+        }
+
+        /* ── Sections ── */
+        .wiki-section {
+            background: var(--sf-white);
+            border: 1px solid var(--sf-border-light);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--sf-navy) 0%, #04497a 100%);
+            color: var(--sf-text-inverse);
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-header .icon {
+            width: 18px;
+            height: 18px;
+            opacity: 0.7;
+        }
+
+        .section-body { padding: 1.25rem; }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            margin-top: 1px;
+        }
+
+        .callout-info {
+            background: #EEF4FF;
+            border-left: 4px solid var(--sf-cloud);
+            color: var(--sf-navy);
+        }
+
+        .callout-warning {
+            background: #FFF8E1;
+            border-left: 4px solid var(--sf-warning);
+            color: #5D4200;
+        }
+
+        .callout-success {
+            background: #E8F5E9;
+            border-left: 4px solid var(--sf-success);
+            color: #1B5E20;
+        }
+
+        .callout strong { font-weight: 600; }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+
+        th {
+            background: var(--sf-navy);
+            color: var(--sf-text-inverse);
+            text-align: left;
+            padding: 0.55rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        th:first-child { border-radius: 4px 0 0 0; }
+        th:last-child { border-radius: 0 4px 0 0; }
+
+        td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--sf-border-light);
+            vertical-align: top;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #F0F7FF; }
+
+        td code {
+            background: #EEF4FF;
+            color: var(--sf-navy);
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            font-size: 0.78rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        .badge-pk { background: var(--sf-navy); color: #fff; }
+        .badge-fk { background: var(--sf-cloud); color: #fff; }
+        .badge-md { background: var(--sf-purple); color: #fff; }
+        .badge-required { background: var(--sf-error); color: #fff; }
+        .badge-currency { background: var(--sf-orange); color: #fff; }
+        .badge-picklist { background: var(--sf-success); color: #fff; }
+        .badge-text { background: var(--sf-text-muted); color: #fff; }
+        .badge-number { background: #5C6BC0; color: #fff; }
+        .badge-person { background: #0B827C; color: #fff; }
+        .badge-standard { background: var(--sf-cloud); color: #fff; }
+        .badge-custom { background: var(--sf-purple); color: #fff; }
+
+        /* ── Picklist Chips ── */
+        .picklist-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .picklist-chip {
+            font-size: 0.68rem;
+            background: #E5E5E5;
+            color: var(--sf-text);
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .picklist-chip.default {
+            background: var(--sf-success);
+            color: #fff;
+        }
+
+        /* ── Mermaid ── */
+        .mermaid-container {
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem 1rem;
+            background: #FAFBFC;
+            border-radius: 4px;
+        }
+
+        /* ── Object Header Card ── */
+        .object-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .object-card-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--sf-navy);
+        }
+
+        .object-meta-pills {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-pill {
+            font-size: 0.7rem;
+            background: #EEF4FF;
+            color: var(--sf-navy);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        /* ── Property List ── */
+        .prop-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .prop-item {
+            display: flex;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+        }
+
+        .prop-label {
+            font-weight: 600;
+            color: var(--sf-text-muted);
+            white-space: nowrap;
+        }
+
+        /* ── Decision Table ── */
+        .decision-row td:first-child {
+            font-weight: 600;
+            color: var(--sf-navy);
+            white-space: nowrap;
+        }
+
+        /* ── Person Account Comparison ── */
+        .comparison-highlight td:nth-child(3) {
+            background: #E8F5E9;
+            font-weight: 600;
+        }
+
+        /* ── Footer ── */
+        .wiki-footer {
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.75rem;
+            color: var(--sf-text-muted);
+            border-top: 1px solid var(--sf-border-light);
+            margin-top: 1rem;
+        }
+
+        .wiki-footer .sf-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--sf-navy);
+            font-weight: 600;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .wiki-sidebar { display: none; }
+            .wiki-main { margin-left: 0; }
+            .prop-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="wiki-sidebar">
+    <div class="sidebar-brand">
+        <svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+            <path d="M45.1 1.6C40.2 6.7 37.3 13.6 37.3 20.8c0 4.3.9 8.4 2.8 12.2-2.7-1.3-5.7-2-8.8-2C14 31 0 45 0 62.3c0 2.1.2 4.2.6 6.2C5 63.1 12 59 19.8 59c2.2 0 4.3.3 6.3.8-1-.1-2-.1-3 0C14.6 60.4 8 67.4 8 75.9c0 .1 0 .1 0 .2h17.6c8.5-3.4 14.5-11.7 14.5-21.3 0-3.5-.8-6.8-2.2-9.8 4.4 5 10.8 8.2 17.9 8.2 13.2 0 23.9-10.7 23.9-23.9 0-4-.1-7.8-1.3-11.4 2.9 4.5 7.3 7.9 12.5 9.4C88.4 23.2 85 18 85 12c0-1.4.2-2.8.6-4.1C81.6 2.9 75.5 0 68.8 0c-8.8 0-16.6 4.4-21.3 11.1-.8-3.2-1.6-6.3-2.4-9.5z"/>
+        </svg>
+        <span>FDE Bank Wiki</span>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Data Model</div>
+        <a href="#overview" class="sidebar-link active">Overview</a>
+        <a href="#erd-diagram" class="sidebar-link">ERD Diagram</a>
+        <a href="#person-account" class="sidebar-link">Person Account Model</a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Object Reference</div>
+        <a href="#obj-account" class="sidebar-link indent">Account (Person Account)</a>
+        <a href="#obj-loan-app" class="sidebar-link indent">Loan_Application__c</a>
+        <a href="#obj-loan-qa" class="sidebar-link indent">Loan_QA__c</a>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-section-title">Architecture</div>
+        <a href="#relationships" class="sidebar-link">Relationships</a>
+        <a href="#design-decisions" class="sidebar-link">Design Decisions</a>
+    </div>
+</nav>
+
+<!-- ── Main ── -->
+<div class="wiki-main">
+
+    <div class="wiki-header">
+        <div class="breadcrumb">
+            <a href="#">FDE Bank</a>
+            <span class="sep">/</span>
+            <a href="#">Architecture</a>
+            <span class="sep">/</span>
+            Entity Relationship Diagram
+        </div>
+    </div>
+
+    <div class="wiki-content">
+
+        <h1 class="page-title" id="overview">Entity Relationship Diagram</h1>
+        <p class="page-subtitle">Person Account data model for the FDE Bank loan origination platform</p>
+
+        <!-- Overview -->
+        <div class="wiki-section">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Overview
+            </div>
+            <div class="section-body">
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#0176D3" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <div>This data model uses the <strong>Salesforce Person Account</strong> record type to represent individual banking customers. Person Accounts unify Account and Contact into a single record, providing a streamlined 360&deg; view of each applicant.</div>
+                </div>
+                <table>
+                    <tbody>
+                        <tr><td><strong>Record Model</strong></td><td>Person Account (Individual)</td></tr>
+                        <tr><td><strong>Custom Objects</strong></td><td><code>Loan_Application__c</code>, <code>Loan_QA__c</code></td></tr>
+                        <tr><td><strong>Namespace</strong></td><td>None</td></tr>
+                        <tr><td><strong>API Version</strong></td><td>66.0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ERD Diagram -->
+        <div class="wiki-section" id="erd-diagram">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="10" y1="6.5" x2="14" y2="6.5"/><line x1="6.5" y1="10" x2="6.5" y2="14"/></svg>
+                ERD Diagram
+            </div>
+            <div class="section-body">
+                <div class="mermaid-container">
+                    <div class="mermaid">
+erDiagram
+    Account_PersonAccount ||--o{ Loan_Application__c : "Applicant (Lookup)"
+    Loan_Application__c ||--o{ Loan_QA__c : "Master-Detail"
+
+    Account_PersonAccount {
+        Id Id PK
+        Name Name "FirstName + LastName"
+        Boolean IsPersonAccount "true"
+        Text FirstName "Person Field"
+        Text LastName "Person Field"
+        Email PersonEmail "Person Field"
+        Phone PersonMobilePhone "Person Field"
+        Date PersonBirthdate "Person Field"
+        Id RecordTypeId FK "Person Account RT"
+    }
+
+    Loan_Application__c {
+        AutoNumber Name PK "LA-0000"
+        Lookup Applicant__c FK "Person Account"
+        Currency Loan_Amount__c
+        Currency House_Cost__c
+        Currency Annual_Net_Income__c
+        Number Loan_Duration_Months__c
+        Picklist Status__c
+        Picklist Work_Situation__c
+        LongTextArea Reject_Reason__c
+    }
+
+    Loan_QA__c {
+        AutoNumber Name PK "QA-0000"
+        MasterDetail Loan_Application__c FK
+        Text Question__c
+        LongTextArea Answer__c
+    }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Person Account Model -->
+        <div class="wiki-section" id="person-account">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Person Account Model
+            </div>
+            <div class="section-body">
+                <div class="callout callout-warning">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#DD7A01" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <div><strong>Important:</strong> Person Accounts must be enabled at the org level. Once enabled, this setting cannot be reversed.</div>
+                </div>
+
+                <p style="font-size:0.85rem; margin-bottom:1rem;">Person Accounts combine Account and Contact into a single record for individuals (B2C). Each loan applicant is a Person Account &mdash; no separate Contact record is needed.</p>
+
+                <h4 style="font-size:0.85rem; font-weight:600; color:var(--sf-navy); margin-bottom:0.5rem;">Business Account vs Person Account</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Business Account</th>
+                            <th>Person Account</th>
+                        </tr>
+                    </thead>
+                    <tbody class="comparison-highlight">
+                        <tr><td>Represents</td><td>Company / Organization</td><td>Individual Person</td></tr>
+                        <tr><td>Contact Required</td><td>Yes (separate record)</td><td>No (merged into Account)</td></tr>
+                        <tr><td>Name Field</td><td>Account Name (single)</td><td>FirstName + LastName</td></tr>
+                        <tr><td>Contact Fields</td><td>On related Contact</td><td>Directly on Account (<code>Person*</code>)</td></tr>
+                        <tr><td>IsPersonAccount</td><td><code>false</code></td><td><code>true</code></td></tr>
+                    </tbody>
+                </table>
+
+                <h4 style="font-size:0.85rem; font-weight:600; color:var(--sf-navy); margin:1rem 0 0.5rem;">Person Fields Available on Account</h4>
+                <table>
+                    <thead>
+                        <tr><th>API Name</th><th>Label</th><th>Source (Contact)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>FirstName</code></td><td>First Name</td><td>Contact.FirstName</td></tr>
+                        <tr><td><code>LastName</code></td><td>Last Name</td><td>Contact.LastName</td></tr>
+                        <tr><td><code>PersonEmail</code></td><td>Email</td><td>Contact.Email</td></tr>
+                        <tr><td><code>PersonMobilePhone</code></td><td>Mobile Phone</td><td>Contact.MobilePhone</td></tr>
+                        <tr><td><code>PersonBirthdate</code></td><td>Birthdate</td><td>Contact.Birthdate</td></tr>
+                        <tr><td><code>PersonMailingStreet</code></td><td>Mailing Street</td><td>Contact.MailingStreet</td></tr>
+                        <tr><td><code>PersonMailingCity</code></td><td>Mailing City</td><td>Contact.MailingCity</td></tr>
+                        <tr><td><code>PersonMailingState</code></td><td>Mailing State</td><td>Contact.MailingState</td></tr>
+                        <tr><td><code>PersonMailingPostalCode</code></td><td>Mailing Postal Code</td><td>Contact.MailingPostalCode</td></tr>
+                        <tr><td><code>PersonMailingCountry</code></td><td>Mailing Country</td><td>Contact.MailingCountry</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Object: Account (Person Account) -->
+        <div class="wiki-section" id="obj-account">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Account (Person Account)
+            </div>
+            <div class="section-body">
+                <div class="object-card-header">
+                    <h3>Account</h3>
+                    <div class="object-meta-pills">
+                        <span class="badge badge-standard">Standard Object</span>
+                        <span class="badge badge-person">Person Account</span>
+                    </div>
+                </div>
+
+                <div class="callout callout-success">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#2E844A" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <div>The Account object with Person Account record type serves as the primary customer record. Each applicant is a single Person Account holding both account-level and contact-level information.</div>
+                </div>
+
+                <div class="prop-grid">
+                    <div class="prop-item"><span class="prop-label">Record Type:</span> Person Account</div>
+                    <div class="prop-item"><span class="prop-label">IsPersonAccount:</span> <code>true</code></div>
+                    <div class="prop-item"><span class="prop-label">Name Format:</span> FirstName + LastName</div>
+                    <div class="prop-item"><span class="prop-label">Sharing Model:</span> Private (recommended)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Object: Loan_Application__c -->
+        <div class="wiki-section" id="obj-loan-app">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                Loan_Application__c
+            </div>
+            <div class="section-body">
+                <div class="object-card-header">
+                    <h3>Loan Application</h3>
+                    <div class="object-meta-pills">
+                        <span class="badge badge-custom">Custom Object</span>
+                        <span class="meta-pill">Sharing: ReadWrite</span>
+                        <span class="meta-pill">Name: LA-{0000}</span>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#0176D3" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <div>The <code>Contact__c</code> lookup from the previous model has been removed. Person Account fields (email, phone, address) are accessed directly through the <code>Applicant__c</code> relationship.</div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr><th>Field API Name</th><th>Label</th><th>Type</th><th>Details</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Name</code></td>
+                            <td>Loan Application Name</td>
+                            <td><span class="badge badge-pk">AutoNumber</span></td>
+                            <td>Format: <code>LA-{0000}</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Applicant__c</code></td>
+                            <td>Applicant</td>
+                            <td><span class="badge badge-fk">Lookup</span> <span class="badge badge-required">Required</span></td>
+                            <td>References: Account (Person Account) &bull; Delete: Restrict</td>
+                        </tr>
+                        <tr>
+                            <td><code>Loan_Amount__c</code></td>
+                            <td>Loan Amount</td>
+                            <td><span class="badge badge-currency">Currency</span></td>
+                            <td>Precision: 18, Scale: 2</td>
+                        </tr>
+                        <tr>
+                            <td><code>House_Cost__c</code></td>
+                            <td>House Cost</td>
+                            <td><span class="badge badge-currency">Currency</span></td>
+                            <td>Precision: 18, Scale: 2</td>
+                        </tr>
+                        <tr>
+                            <td><code>Annual_Net_Income__c</code></td>
+                            <td>Annual Net Income</td>
+                            <td><span class="badge badge-currency">Currency</span></td>
+                            <td>Precision: 18, Scale: 2</td>
+                        </tr>
+                        <tr>
+                            <td><code>Loan_Duration_Months__c</code></td>
+                            <td>Loan Duration (Months)</td>
+                            <td><span class="badge badge-number">Number</span></td>
+                            <td>Precision: 4, Scale: 0</td>
+                        </tr>
+                        <tr>
+                            <td><code>Status__c</code></td>
+                            <td>Status</td>
+                            <td><span class="badge badge-picklist">Picklist</span></td>
+                            <td>
+                                <div class="picklist-values">
+                                    <span class="picklist-chip default">New (default)</span>
+                                    <span class="picklist-chip">Pending Approval</span>
+                                    <span class="picklist-chip">Approved</span>
+                                    <span class="picklist-chip">Rejected</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Work_Situation__c</code></td>
+                            <td>Work Situation</td>
+                            <td><span class="badge badge-picklist">Picklist</span></td>
+                            <td>
+                                <div class="picklist-values">
+                                    <span class="picklist-chip">Employed Full-Time</span>
+                                    <span class="picklist-chip">Employed Part-Time</span>
+                                    <span class="picklist-chip">Self-Employed</span>
+                                    <span class="picklist-chip">Unemployed</span>
+                                    <span class="picklist-chip">Retired</span>
+                                    <span class="picklist-chip">Student</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>Reject_Reason__c</code></td>
+                            <td>Reject Reason</td>
+                            <td><span class="badge badge-text">LongTextArea</span></td>
+                            <td>Max Length: 256</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="prop-grid" style="margin-top:1rem;">
+                    <div class="prop-item"><span class="prop-label">Deployment:</span> Deployed</div>
+                    <div class="prop-item"><span class="prop-label">Sharing:</span> ReadWrite</div>
+                    <div class="prop-item"><span class="prop-label">Activities:</span> Enabled</div>
+                    <div class="prop-item"><span class="prop-label">Feed Tracking:</span> Enabled</div>
+                    <div class="prop-item"><span class="prop-label">Search:</span> Enabled</div>
+                    <div class="prop-item"><span class="prop-label">Reports:</span> Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Object: Loan_QA__c -->
+        <div class="wiki-section" id="obj-loan-qa">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Loan_QA__c
+            </div>
+            <div class="section-body">
+                <div class="object-card-header">
+                    <h3>Loan Q&amp;A</h3>
+                    <div class="object-meta-pills">
+                        <span class="badge badge-custom">Custom Object</span>
+                        <span class="meta-pill">Sharing: Controlled By Parent</span>
+                        <span class="meta-pill">Name: QA-{0000}</span>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr><th>Field API Name</th><th>Label</th><th>Type</th><th>Details</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Name</code></td>
+                            <td>Loan Q&amp;A Name</td>
+                            <td><span class="badge badge-pk">AutoNumber</span></td>
+                            <td>Format: <code>QA-{0000}</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Loan_Application__c</code></td>
+                            <td>Loan Application</td>
+                            <td><span class="badge badge-md">Master-Detail</span></td>
+                            <td>References: Loan_Application__c &bull; Not Reparentable</td>
+                        </tr>
+                        <tr>
+                            <td><code>Question__c</code></td>
+                            <td>Question</td>
+                            <td><span class="badge badge-text">Text</span></td>
+                            <td>Max Length: 255</td>
+                        </tr>
+                        <tr>
+                            <td><code>Answer__c</code></td>
+                            <td>Answer</td>
+                            <td><span class="badge badge-text">LongTextArea</span></td>
+                            <td>Max Length: 32,768</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="prop-grid" style="margin-top:1rem;">
+                    <div class="prop-item"><span class="prop-label">Deployment:</span> Deployed</div>
+                    <div class="prop-item"><span class="prop-label">Sharing:</span> Controlled By Parent</div>
+                    <div class="prop-item"><span class="prop-label">Search:</span> Enabled</div>
+                    <div class="prop-item"><span class="prop-label">Reports:</span> Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationships -->
+        <div class="wiki-section" id="relationships">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Relationships
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Parent</th>
+                            <th>Child</th>
+                            <th>Type</th>
+                            <th>Field</th>
+                            <th>Rel. Name</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Account (Person Account)</td>
+                            <td>Loan_Application__c</td>
+                            <td><span class="badge badge-fk">Lookup</span> <span class="badge badge-required">Required</span></td>
+                            <td><code>Applicant__c</code></td>
+                            <td><code>Loan_Applications</code></td>
+                            <td>Restrict</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Loan_Application__c</td>
+                            <td>Loan_QA__c</td>
+                            <td><span class="badge badge-md">Master-Detail</span></td>
+                            <td><code>Loan_Application__c</code></td>
+                            <td><code>Loan_QAs</code></td>
+                            <td>Cascade</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-info" style="margin-top:1rem;">
+                    <svg class="callout-icon" viewBox="0 0 24 24" fill="none" stroke="#0176D3" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <div>
+                        <strong>Account &rarr; Loan_Application__c:</strong> The <code>Applicant__c</code> lookup targets the Account object. When Person Accounts are enabled, this resolves to Person Account records (<code>IsPersonAccount = true</code>). No separate Contact lookup is needed.<br>
+                        <strong>Loan_Application__c &rarr; Loan_QA__c:</strong> Master-Detail ensures Q&amp;A records inherit sharing from the parent and are cascade-deleted when the parent is removed.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Decisions -->
+        <div class="wiki-section" id="design-decisions">
+            <div class="section-header">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                Design Decisions
+            </div>
+            <div class="section-body">
+                <table>
+                    <thead>
+                        <tr><th>Decision</th><th>Rationale</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="decision-row">
+                            <td>Person Account over Account + Contact</td>
+                            <td>Banking customers are individuals, not businesses. Person Accounts provide a single record per customer, simplifying data access and eliminating Account-Contact joins.</td>
+                        </tr>
+                        <tr class="decision-row">
+                            <td>Single Applicant lookup (no Contact__c)</td>
+                            <td>With Person Accounts, contact-level fields (email, phone, address) are available via <code>Person*</code> prefixed fields directly on the Account. A separate Contact lookup is redundant.</td>
+                        </tr>
+                        <tr class="decision-row">
+                            <td>Master-Detail for Loan Q&amp;A</td>
+                            <td>Q&amp;A records have no meaning outside their parent Loan Application. Master-Detail enforces this lifecycle dependency and enables roll-up summaries.</td>
+                        </tr>
+                        <tr class="decision-row">
+                            <td>Restrict delete on Applicant</td>
+                            <td>Prevents accidental deletion of a Person Account with active loan applications, preserving data integrity.</td>
+                        </tr>
+                        <tr class="decision-row">
+                            <td>Flexible Q&amp;A model</td>
+                            <td>Generic Question/Answer child object avoids schema changes when new qualification questions are added to the loan process.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="wiki-footer">
+            <div class="sf-logo">
+                <svg width="16" height="11" viewBox="0 0 100 70" fill="#032D60"><path d="M45.1 1.6C40.2 6.7 37.3 13.6 37.3 20.8c0 4.3.9 8.4 2.8 12.2-2.7-1.3-5.7-2-8.8-2C14 31 0 45 0 62.3c0 2.1.2 4.2.6 6.2C5 63.1 12 59 19.8 59c2.2 0 4.3.3 6.3.8-1-.1-2-.1-3 0C14.6 60.4 8 67.4 8 75.9c0 .1 0 .1 0 .2h17.6c8.5-3.4 14.5-11.7 14.5-21.3 0-3.5-.8-6.8-2.2-9.8 4.4 5 10.8 8.2 17.9 8.2 13.2 0 23.9-10.7 23.9-23.9 0-4-.1-7.8-1.3-11.4 2.9 4.5 7.3 7.9 12.5 9.4C88.4 23.2 85 18 85 12c0-1.4.2-2.8.6-4.1C81.6 2.9 75.5 0 68.8 0c-8.8 0-16.6 4.4-21.3 11.1-.8-3.2-1.6-6.3-2.4-9.5z"/></svg>
+                FDE Bank
+            </div>
+            Generated from SFDX metadata &mdash; API Version 66.0 &mdash; Person Account Model
+        </div>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'base',
+        themeVariables: {
+            primaryColor: '#032D60',
+            primaryTextColor: '#FFFFFF',
+            primaryBorderColor: '#0176D3',
+            lineColor: '#1B96FF',
+            secondaryColor: '#EEF4FF',
+            tertiaryColor: '#F0F7FF',
+            edgeLabelBackground: '#FFFFFF'
+        }
+    });
+
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', function() {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
